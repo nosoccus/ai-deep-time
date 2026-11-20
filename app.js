@@ -135,7 +135,7 @@ var UI_STRINGS = {
     'srcType.talk': 'talk',
     'srcType.other': 'other',
     'foot.verified': 'Snapshot as of {date}, not updated since',
-    'foot.made': 'Made with AI: Anthropic’s Claude researched the sources, wrote the text and built the page from a single research file, and AI fact-checked it against the cited sources: the original research on 9 October 2026, the latest update on {date}. No human expert has reviewed it, so it may contain errors. Every milestone, number and quote carries a source id; estimates are marked “est.” and anything still uncertain is labelled as such. Model line-ups, benchmarks and prices date quickly. Built with SVG, CSS and plain JavaScript, with no external libraries or images.',
+    'foot.made': 'Made with AI: Anthropic’s Claude researched the sources, wrote the text and built the page from one research dataset and its dated updates, and AI fact-checked it against the cited sources: the original research on 9 October 2026, the latest update on {date}. No human expert has reviewed it, so it may contain errors. Every milestone, number and quote carries a source id; estimates are marked “est.” and anything still uncertain is labelled as such. Model line-ups, benchmarks and prices date quickly. Built with SVG, CSS and plain JavaScript, with no external libraries or images.',
     'foot.credits': 'Chart data from Epoch AI, METR, Artificial Analysis, the Stanford AI Index and Our World in Data, credited on each chart. Code under the MIT licence; original text and data under CC BY 4.0; quotations, names and trademarks belong to their owners. Not affiliated with any AI company.',
     'count.milestones': 'milestone|milestones',
     'count.models': 'model|models',
@@ -361,7 +361,7 @@ var UI_STRINGS = {
     'srcType.talk': 'виступ',
     'srcType.other': 'інше',
     'foot.verified': 'Знімок станом на {date}, відтоді не оновлювався',
-    'foot.made': 'Створено за допомогою ШІ: Claude від Anthropic опрацював джерела, написав тексти й зібрав сторінку на основі одного дослідницького файлу, а ШІ звірив факти з наведеними джерелами (основне дослідження — 9 жовтня 2026 р., останнє оновлення — {date}). Жоден експерт-людина цього не перевіряв, тож можливі помилки. Кожна віха, число й цитата має ідентифікатор джерела; оцінки позначено «оц.», а все, що досі невизначене, позначено окремо. Лінійки моделей, бенчмарки й ціни швидко застарівають. Сторінку зроблено на SVG, CSS і звичайному JavaScript, без зовнішніх бібліотек і зображень.',
+    'foot.made': 'Створено за допомогою ШІ: Claude від Anthropic опрацював джерела, написав тексти й зібрав сторінку на основі одного дослідницького набору даних і його датованих оновлень, а ШІ звірив факти з наведеними джерелами (основне дослідження — 9 жовтня 2026 р., останнє оновлення — {date}). Жоден експерт-людина цього не перевіряв, тож можливі помилки. Кожна віха, число й цитата має ідентифікатор джерела; оцінки позначено «оц.», а все, що досі невизначене, позначено окремо. Лінійки моделей, бенчмарки й ціни швидко застарівають. Сторінку зроблено на SVG, CSS і звичайному JavaScript, без зовнішніх бібліотек і зображень.',
     'foot.credits': 'Дані графіків: Epoch AI, METR, Artificial Analysis, Stanford AI Index та Our World in Data, джерело вказано на кожному графіку. Код поширюється за ліцензією MIT, оригінальні тексти й дані — за CC BY 4.0; цитати, назви й торговельні марки належать їхнім власникам. Сайт не пов’язаний із жодною компанією ШІ.',
     'count.milestones': 'віха|віхи|віх',
     'count.models': 'модель|моделі|моделей',
@@ -899,31 +899,6 @@ function bindDialogs() {
     d.addEventListener('click', function (e) { if (e.target === d) closeDialog(d); });   /* backdrop click */
   })(dlgs[i]);
 }
-/* Minimal sources drawer for the milestone card. Part 2 may replace it: AIDT.openSources = function (ids, title) {...} */
-function sourceListHtml(ids) {
-  var html = '<ul class="src-list">';
-  for (var i = 0; i < ids.length; i++) {
-    var id = ids[i], s = sourceOf(id);
-    html += '<li><span class="id">' + esc(id) + '</span>';
-    if (!s) { html += '<span class="ti">' + esc(id) + '</span></li>'; continue; }
-    var title = esc(L(s.title) || id);
-    html += '<span class="ti">' + (s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + title + '</a>' : title) + '</span>';
-    var og = [];
-    if (s.org) og.push(L(s.org));
-    if (s.year) og.push(String(s.year));
-    if (s.type) og.push(has('srcType.' + s.type) ? t('srcType.' + s.type) : s.type);
-    if (og.length) html += '<span class="og">' + esc(og.join(' · ')) + '</span>';
-    html += '</li>';
-  }
-  return html + '</ul>';
-}
-function openSources(ids, title) {
-  if (!els.srcDlg) return;
-  setText('srcDlgTitle', t('src.title', { title: title || '' }));
-  els.srcDlgBody.innerHTML = (ids && ids.length) ? sourceListHtml(ids) : '<p class="small">' + esc(t('src.none')) + '</p>';
-  openDialog(els.srcDlg);
-}
-
 /* ============================================================================
    10. INJECTED STYLE (small additions that belong to this script's widgets)
    ========================================================================== */
@@ -1625,7 +1600,7 @@ var AIDT = window.AIDT = {
   play: play, pause: pause, togglePlay: togglePlay, setSpeed: setSpeed,
   setScale: setScale, toggleScale: toggleScale, setLang: setLang,
   eraAt: eraAt, eraOf: eraOf, eraColor: eraColor, isLight: isLight,
-  sourceOf: sourceOf, sourceListHtml: sourceListHtml, openSources: openSources, openDialog: openDialog, closeDialog: closeDialog,
+  sourceOf: sourceOf, openDialog: openDialog, closeDialog: closeDialog,
   counts: counts, reload: reload,
   data: function () { return { milestones: M, eras: ERAS, eraById: eraById, msById: msById }; }
 };
@@ -1678,7 +1653,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
        (ctx.reason: init|nav|key|era|drag|play|lang|register).
      AIDT.on('change' | 'lang' | 'scale' | 'scaleframe' | 'scaleend' | 'theme' | 'play' | 'speed' | 'ready', fn)
      AIDT.scale.xOf(t) / tOf(x) / mix / mode — charts that follow the scrubber's scale.
-     AIDT.openSources(ids, title) may be replaced by a richer drawer.
+     AIDT.openSources(ids, title, opts) and AIDT.sourceListHtml(ids) come from app-panels.js.
      AIDT.addStrings({en:{}, uk:{}}) for any extra strings.
    ========================================================================== */
 })();

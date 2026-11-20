@@ -6,16 +6,32 @@ window.AIH = window.AIH || {};
 (function (A) {
   var UPDATE = "2026-11-18";
 
-  function find(list, id) {
-    for (var i = 0; list && i < list.length; i++) { if (list[i].id === id || list[i].provider === id) return list[i]; }
+  function findBy(list, key, value) {
+    for (var i = 0; list && i < list.length; i++) { if (list[i][key] === value) return list[i]; }
     return null;
+  }
+  function findById(list, id) { return findBy(list, "id", id); }
+  function findByProvider(list, provider) { return findBy(list, "provider", provider); }
+  // ISO date -> decimal year, t = year + (dayOfYear - 1) / 365, the convention used for every t in the data files.
+  function toT(iso) {
+    var y = +iso.slice(0, 4), d = Date.UTC(y, +iso.slice(5, 7) - 1, +iso.slice(8, 10)), d0 = Date.UTC(y, 0, 1);
+    return y + Math.round((d - d0) / 86400000) / 365;
   }
   function set(o, fields) { if (!o) return; for (var k in fields) { if (Object.prototype.hasOwnProperty.call(fields, k)) o[k] = fields[k]; } }
 
   // ---------------------------------------------------------------- snapshot date and era E13
-  if (A.meta) { A.meta.chartsAsOf = A.meta.asOf; A.meta.asOf = UPDATE; }
-  var e13 = find(A.eras, "E13");
-  set(e13, {end: 2026.89, span: {en: "May 2025–Nov 2026", uk: "травень 2025 – листопад 2026"}});
+  // chartsAsOf keeps the date of the last chart data; set it only once, so later updates without new chart points keep it.
+  if (A.meta) {
+    if (!A.meta.chartsAsOf) A.meta.chartsAsOf = A.meta.asOf;
+    A.meta.asOf = UPDATE;
+    A.meta.datasetNote = {
+      en: "Built from one research dataset and its dated updates: AI fact-checked the original research on 9 October 2026 and the latest update on 18 November 2026. Every milestone, number and quote carries a source id; estimates are marked \"est.\" and whatever is still uncertain is labelled as such.",
+      uk: "Побудовано на основі одного дослідницького набору даних і його датованих оновлень: ШІ звірив факти основного дослідження 9 жовтня 2026 р. та останнього оновлення 18 листопада 2026 р. Кожна віха, число й цитата має ідентифікатор джерела; оцінки позначено «оц.», а все, що досі невизначене, позначено окремо."
+    };
+  }
+  // The last era ends at the snapshot date; the timeline's "now" mark and the charts' right edge follow it.
+  var e13 = findById(A.eras, "E13");
+  set(e13, {end: toT(UPDATE), span: {en: "May 2025–Nov 2026", uk: "травень 2025 – листопад 2026"}});
   if (e13 && e13.summary) {
     e13.summary = {
       en: e13.summary.en + " By mid-November the race had become an IPO story too: Anthropic filed publicly to list on Nasdaq, while OpenAI's GPT-6.2 Astra and Anthropic's Claude Fable 5.2 finished the period statistically tied at the top of Epoch's capability index.",
@@ -149,16 +165,17 @@ window.AIH = window.AIH || {};
 
   // ---------------------------------------------------------------- model rows
   var M = A.models = A.models || [];
-  var argon = find(M, "gemini-4-argon");
+  var argon = findById(M, "gemini-4-argon");
   if (argon && argon.sources) argon.sources.push("S-UPD1-01");
-  set(argon, {status: undefined,
+  if (argon) delete argon.status;
+  set(argon, {
     notable: {en: "Newest Google frontier model at release; first Gemini with a codename in place of the Pro/Flash tiers. First released to cyber defenders (Fairwind Program); generally available in the Gemini API from 2026-10-13.",
               uk: "На момент виходу найновіша передова модель Google; перша Gemini з кодовою назвою замість рівнів Pro/Flash. Спершу випущена для кіберзахисників (програма Fairwind); загальнодоступна в Gemini API з 13 жовтня 2026 р."}});
-  set(find(M, "mistral-large-4"), {type: "open-weights", price: "$0.70 / $2.10 (from late Oct; was $1.36 / $4.18)",
+  var mistralLarge4 = findById(M, "mistral-large-4");
+  set(mistralLarge4, {type: "open-weights", price: "$0.70 / $2.10 (from late Oct; was $1.36 / $4.18)",
     notable: {en: "Mistral's first trillion-parameter model, trained on 3,800 NVIDIA Grace Blackwell GPUs (Mistral). Open weights (Mistral-Large-4-1T-A52B) on Hugging Face from about 2026-10-29 under the Mistral Ecosystem Open-Weight licence, a modified MIT licence that needs a separate licence for model-as-a-service resellers.",
               uk: "Перша трильйонна модель Mistral, навчена на 3 800 GPU NVIDIA Grace Blackwell (за даними Mistral). Відкриті ваги (Mistral-Large-4-1T-A52B) на Hugging Face приблизно з 29 жовтня 2026 р. за ліцензією Mistral Ecosystem Open-Weight — зміненою MIT, що вимагає окремої ліцензії для перепродавців моделі як сервісу."}});
-  var mlSources = find(M, "mistral-large-4");
-  if (mlSources && mlSources.sources) mlSources.sources.push("S-UPD1-33");
+  if (mistralLarge4 && mistralLarge4.sources) mistralLarge4.sources.push("S-UPD1-33");
 
   M.push(
     {id: "gpt-6-1-terra", provider: "openai", name: "GPT-6.1 Terra", released: "2026-10-26", precision: "day", t: 2026.816,
@@ -255,7 +272,7 @@ window.AIH = window.AIH || {};
   var add = {
     "S-UPD1-01": {title: "Gemini API changelog", org: "Google", year: "2026", url: "https://aistudio.google.com/docs/changelog", type: "primary"},
     "S-UPD1-02": {title: "Gemini API pricing", org: "Google", year: "2026", url: "https://aistudio.google.com/docs/pricing", type: "primary"},
-    "S-UPD1-03": {title: "Introducing Gemini 4 Hydrogen (12 Nov 2026)", org: "Google DeepMind", year: "2026", url: null, type: "primary"},
+    "S-UPD1-03": {title: "Introducing Gemini 4 Hydrogen (12 Nov 2026)", org: "Google", year: "2026", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/", type: "primary"},
     "S-UPD1-04": {title: "Introducing Gemini Omni 1.2 Flash", org: "Google", year: "2026", url: "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/", type: "primary"},
     "S-UPD1-05": {title: "GPT-6.1 Terra model page", org: "OpenAI", year: "2026", url: "https://developers.openai.com/api/docs/models/gpt-6.1-terra", type: "primary"},
     "S-UPD1-06": {title: "OpenAI rolls out budget-priced mid-tier GPT-6.1 Terra", org: "The Register", year: "2026", url: "https://theregister.com/ai-and-ml/2026/10/26/openai-rolls-out-budget-priced-mid-tier-gpt-61-terra/5305574", type: "secondary"},
