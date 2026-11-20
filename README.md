@@ -4,7 +4,7 @@
 
 [![The AI Deep Time page: the year 1958 and the perceptron above a timeline from 1943 to now](assets/social-preview.png)](https://nosoccus.github.io/ai-deep-time/)
 
-An interactive, bilingual (English / Ukrainian) timeline of eighty years of artificial intelligence, from the first artificial neuron (1943) to agents that write code (2026). It has 76 milestones in 13 eras, the model line-ups of the main labs, charts of compute, benchmarks, prices and adoption, 14 architecture diagrams, a "myths and mix-ups" section, and 860 cited sources.
+An interactive, bilingual (English / Ukrainian) timeline of eighty years of artificial intelligence, from the first artificial neuron (1943) to agents that write code (2026). It has 76 milestones in 13 eras, the model line-ups of the main labs, charts of compute, benchmarks, prices and adoption, 14 architecture diagrams, a "myths and mix-ups" section, and 861 cited sources.
 
 **A snapshot as of 18 November 2026.** The AI-checked research covers 1943 to 9 October 2026; an update pass added 9 October to 18 November 2026 (see `data/update-2026-11-18.js`). The history ages well; the model line-ups, benchmark scores and prices from 2024 on date within months.
 
@@ -30,7 +30,7 @@ It is a static page with no build step and no dependencies: open `index.html` th
 python -m http.server 8000
 ```
 
-then go to <http://localhost:8000>. Opening `index.html` straight from disk won't work in every browser, because the page's Content-Security-Policy only allows scripts from its own origin.
+then go to <http://localhost:8000>.
 
 What is where:
 
